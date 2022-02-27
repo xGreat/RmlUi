@@ -57,6 +57,8 @@ public:
 	void EnableScissorRegion(bool enable) override;
 	/// Called by RmlUi when it wants to change the scissor region.
 	void SetScissorRegion(int x, int y, int width, int height) override;
+	/// Called by RmlUi when it wants to setup the stencil buffer.
+	void StencilCommand(Rml::StencilCommand command, int value, int mask) override;
 
 	/// Called by RmlUi when a texture is required by the library.
 	bool LoadTexture(Rml::TextureHandle& texture_handle, Rml::Vector2i& texture_dimensions, const Rml::String& source) override;

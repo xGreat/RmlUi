@@ -95,62 +95,61 @@ void ShellRenderInterfaceOpenGL::ReleaseCompiledGeometry(Rml::CompiledGeometryHa
 	RMLUI_UNUSED(geometry);
 }
 
-// Called by RmlUi when it wants to enable or disable scissoring to clip content.		
+// Called by RmlUi when it wants to enable or disable scissoring to clip content.
 void ShellRenderInterfaceOpenGL::EnableScissorRegion(bool enable)
 {
-	if (enable) {
-		if (!m_transform_enabled) {
-			glEnable(GL_SCISSOR_TEST);
-			glDisable(GL_STENCIL_TEST);
-		} else {
-			glDisable(GL_SCISSOR_TEST);
-			glEnable(GL_STENCIL_TEST);
-		}
-	} else {
+	if (enable)
+		glEnable(GL_SCISSOR_TEST);
+	else
 		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_STENCIL_TEST);
-	}
 }
 
-// Called by RmlUi when it wants to change the scissor region.		
+// Called by RmlUi when it wants to change the scissor region.
 void ShellRenderInterfaceOpenGL::SetScissorRegion(int x, int y, int width, int height)
 {
-	if (!m_transform_enabled) {
-		glScissor(x, m_height - (y + height), width, height);
-	} else {
-		// clear the stencil buffer
-		glStencilMask(GLuint(-1));
+	glScissor(x, m_height - (y + height), width, height);
+}
+
+void ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int value, int mask)
+{
+	RMLUI_ASSERT(value >= 0 && value <= 255 && mask >= 0 && mask <= 255);
+	using Rml::StencilCommand;
+
+	switch (command)
+	{
+	case StencilCommand::Clear:
+	{
+		RMLUI_ASSERT(value == 0);
+		glEnable(GL_STENCIL_TEST);
+		glStencilMask(GLuint(mask));
 		glClear(GL_STENCIL_BUFFER_BIT);
-
-		// fill the stencil buffer
+	}
+	break;
+	case StencilCommand::Write:
+	{
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		glDepthMask(GL_FALSE);
-		glStencilFunc(GL_NEVER, 1, GLuint(-1));
-		glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
-
-		float fx = (float)x;
-		float fy = (float)y;
-		float fwidth = (float)width;
-		float fheight = (float)height;
-
-		// draw transformed quad
-		GLfloat vertices[] = {
-			fx, fy, 0,
-			fx, fy + fheight, 0,
-			fx + fwidth, fy + fheight, 0,
-			fx + fwidth, fy, 0
-		};
-		glDisableClientState(GL_COLOR_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		GLushort indices[] = { 1, 2, 0, 3 };
-		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, indices);
-		glEnableClientState(GL_COLOR_ARRAY);
-	
-		// prepare for drawing the real thing
+		glStencilFunc(GL_ALWAYS, GLint(value), GLuint(-1));
+		glStencilMask(GLuint(mask));
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
+	break;
+	case StencilCommand::WriteDisable:
+	{
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		glDepthMask(GL_TRUE);
 		glStencilMask(0);
-		glStencilFunc(GL_EQUAL, 1, GLuint(-1));
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	}
+	break;
+	case StencilCommand::TestEqual:
+	{
+		glStencilFunc(GL_EQUAL, GLint(value), GLuint(mask));
+	}
+	break;
+	case StencilCommand::TestDisable:
+	{
+		glStencilFunc(GL_ALWAYS, GLint(value), GLuint(mask));
+	}
+	break;
 	}
 }
 
