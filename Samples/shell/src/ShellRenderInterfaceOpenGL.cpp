@@ -125,12 +125,19 @@ void ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int
 		glClear(GL_STENCIL_BUFFER_BIT);
 	}
 	break;
-	case StencilCommand::Write:
+	case StencilCommand::WriteValue:
 	{
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glStencilFunc(GL_ALWAYS, GLint(value), GLuint(-1));
 		glStencilMask(GLuint(mask));
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
+	break;
+	case StencilCommand::WriteIncrement:
+	{
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glStencilMask(GLuint(mask));
+		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 	}
 	break;
 	case StencilCommand::WriteDisable:
