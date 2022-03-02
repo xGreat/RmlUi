@@ -110,7 +110,7 @@ void ShellRenderInterfaceOpenGL::SetScissorRegion(int x, int y, int width, int h
 	glScissor(x, m_height - (y + height), width, height);
 }
 
-void ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int value, int mask)
+bool ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int value, int mask)
 {
 	RMLUI_ASSERT(value >= 0 && value <= 255 && mask >= 0 && mask <= 255);
 	using Rml::StencilCommand;
@@ -157,7 +157,11 @@ void ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int
 		glStencilFunc(GL_ALWAYS, GLint(value), GLuint(mask));
 	}
 	break;
+	case StencilCommand::None:
+		break;
 	}
+
+	return true;
 }
 
 // Set to byte packing, or the compiler will expand our struct, which means it won't read correctly from file
