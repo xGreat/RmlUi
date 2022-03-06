@@ -110,7 +110,7 @@ void ShellRenderInterfaceOpenGL::SetScissorRegion(int x, int y, int width, int h
 	glScissor(x, m_height - (y + height), width, height);
 }
 
-bool ShellRenderInterfaceOpenGL::StencilCommand(Rml::StencilCommand command, int value, int mask)
+bool ShellRenderInterfaceOpenGL::ExecuteStencilCommand(Rml::StencilCommand command, int value, int mask)
 {
 	RMLUI_ASSERT(value >= 0 && value <= 255 && mask >= 0 && mask <= 255);
 	using Rml::StencilCommand;
