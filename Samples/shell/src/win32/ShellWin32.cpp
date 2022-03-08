@@ -40,7 +40,6 @@ static LRESULT CALLBACK WindowProcedure(HWND window_handle, UINT message, WPARAM
 static Rml::Context* context = nullptr;
 static ShellRenderInterfaceExtensions* shell_renderer = nullptr;
 
-static bool activated = true;
 static bool running = false;
 static std::wstring instance_name;
 static HWND window_handle = nullptr;
@@ -476,21 +475,7 @@ static LRESULT CALLBACK WindowProcedure(HWND local_window_handle, UINT message, 
 {
 	// See what kind of message we've got.
 	switch (message)
-	{		
-		case WM_ACTIVATE:
-		{
-			if (LOWORD(w_param) != WA_INACTIVE)
-			{
-				activated = true;
-			}
-			else
-			{
-				activated = false;
-			}
-		}
-		break;
-
-		// When the window closes, request exit
+	{
 		case WM_CLOSE:
 		{
 			running = false;
