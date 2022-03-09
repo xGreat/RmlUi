@@ -26,18 +26,15 @@
  *
  */
 
-#include "Shell_Interface.h"
-#include <RmlUi_Platform_Win32.h>
-#include <RmlUi_Renderer_GL2.h>
+#include "RmlUi_Backend.h"
+#include "RmlUi_IncludeWindows.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/Profiling.h>
 #include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Debugger/Debugger.h>
-#include <win32/IncludeWindows.h>
-
-namespace RmlWin32GL2 = Shell;
+#include <RmlUi_Platform_Win32.h>
+#include <RmlUi_Renderer_GL2.h>
 
 #ifndef WM_DPICHANGED
 	#define WM_DPICHANGED 0x02E0
@@ -127,7 +124,7 @@ static LRESULT CALLBACK WindowProcedureHandler(HWND local_window_handle, UINT me
 	return DefWindowProc(local_window_handle, message, w_param, l_param);
 }
 
-bool RmlWin32GL2::InitializeInterfaces()
+bool Backend::InitializeInterfaces()
 {
 	RMLUI_ASSERT(!system_interface && !render_interface);
 
@@ -140,13 +137,13 @@ bool RmlWin32GL2::InitializeInterfaces()
 	return true;
 }
 
-void RmlWin32GL2::ShutdownInterfaces()
+void Backend::ShutdownInterfaces()
 {
 	render_interface.reset();
 	system_interface.reset();
 }
 
-bool RmlWin32GL2::OpenWindow(const char* in_name, unsigned int width, unsigned int height, bool allow_resize)
+bool Backend::OpenWindow(const char* in_name, unsigned int width, unsigned int height, bool allow_resize)
 {
 	if (!RmlWin32::Initialize())
 		return false;
@@ -165,7 +162,7 @@ bool RmlWin32GL2::OpenWindow(const char* in_name, unsigned int width, unsigned i
 	return result;
 }
 
-void RmlWin32GL2::CloseWindow()
+void Backend::CloseWindow()
 {
 	DetachFromNative();
 	RmlWin32::CloseWindow();
@@ -174,7 +171,7 @@ void RmlWin32GL2::CloseWindow()
 	RmlGL2::Shutdown();
 }
 
-void RmlWin32GL2::EventLoop(ShellIdleFunction idle_function)
+void Backend::EventLoop(ShellIdleFunction idle_function)
 {
 	MSG message;
 	running = true;
@@ -194,26 +191,25 @@ void RmlWin32GL2::EventLoop(ShellIdleFunction idle_function)
 	}
 }
 
-void RmlWin32GL2::RequestExit()
+void Backend::RequestExit()
 {
 	running = false;
 }
 
-void RmlWin32GL2::BeginFrame()
+void Backend::FrameBegin()
 {
-	RmlGL2::BeginFrame();
+	RmlGL2::FrameBegin();
 }
 
-void RmlWin32GL2::EndFrame()
+void Backend::FramePresent()
 {
-	RmlGL2::EndFrame();
+	RmlGL2::FrameEnd();
 
 	// Flips the OpenGL buffers.
 	SwapBuffers(device_context);
-	RMLUI_FrameMark;
 }
 
-void RmlWin32GL2::SetContext(Rml::Context* new_context)
+void Backend::SetContext(Rml::Context* new_context)
 {
 	context = new_context;
 	RmlWin32::SetContextForInput(new_context);
@@ -302,7 +298,7 @@ static void ProcessKeyDown(Rml::Input::KeyIdentifier key_identifier, const int k
 	if (!context)
 		return;
 
-	// Toggle debugger and set 'dp'-ratio ctrl +/-/0 keys. These global shortcuts take priority.
+	// Toggle debugger and set dp-ratio using Ctrl +/-/0 keys. These global shortcuts take priority.
 	if (key_identifier == Rml::Input::KI_F8)
 	{
 		Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());

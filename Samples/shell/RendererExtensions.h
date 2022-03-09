@@ -26,52 +26,22 @@
  *
  */
 
-#include "Shell_Common.h"
-#include "Shell_PlatformExtensions.h"
-#include <RmlUi/Core/Core.h>
-#include <ShellFileInterface.h>
+#ifndef RMLUI_SHELL_RENDEREREXTENSIONS_H
+#define RMLUI_SHELL_RENDEREREXTENSIONS_H
 
-static Rml::UniquePtr<ShellFileInterface> file_interface;
+#include <RmlUi/Core/Types.h>
 
-bool Shell::Initialize()
-{
-	Rml::String root = PlatformExtensions::FindSamplesRoot();
-	bool result = !root.empty();
+namespace RendererExtensions {
 
-	file_interface = Rml::MakeUnique<ShellFileInterface>(root);
-	Rml::SetFileInterface(file_interface.get());
+// Extensions used by the test suite
+struct Image {
+	int width = 0;
+	int height = 0;
+	int num_components = 0;
+	Rml::UniquePtr<Rml::byte[]> data;
+};
+Image CaptureScreen();
 
-	return result;
-}
+} // namespace RendererExtensions
 
-void Shell::LoadFonts()
-{
-	Rml::String directory = "assets/";
-
-	struct FontFace {
-		const char* filename;
-		bool fallback_face;
-	};
-	FontFace font_faces[] = {
-		{"LatoLatin-Regular.ttf", false},
-		{"LatoLatin-Italic.ttf", false},
-		{"LatoLatin-Bold.ttf", false},
-		{"LatoLatin-BoldItalic.ttf", false},
-		{"NotoEmoji-Regular.ttf", true},
-	};
-
-	for (const FontFace& face : font_faces)
-	{
-		Rml::LoadFontFace(directory + face.filename, face.fallback_face);
-	}
-}
-
-Rml::StringList Shell::ListDirectories(const Rml::String& in_directory)
-{
-	return PlatformExtensions::ListFilesOrDirectories(PlatformExtensions::ListType::Directories, in_directory, Rml::String());
-}
-
-Rml::StringList Shell::ListFiles(const Rml::String& in_directory, const Rml::String& extension)
-{
-	return PlatformExtensions::ListFilesOrDirectories(PlatformExtensions::ListType::Files, in_directory, extension);
-}
+#endif

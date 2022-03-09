@@ -27,12 +27,12 @@
  */
 
 #include "RmlUi_Platform_Win32.h"
+#include "RmlUi_IncludeWindows.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/Input.h>
 #include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Core/SystemInterface.h>
-#include <win32/IncludeWindows.h>
 
 static bool ProcessInputEvent(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
 static void InitialiseKeymap();

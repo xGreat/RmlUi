@@ -77,8 +77,8 @@ namespace RmlGL2 {
 void Initialize();
 void Shutdown();
 
-void BeginFrame();
-void EndFrame();
+void FrameBegin();
+void FrameEnd();
 
 } // namespace RmlGL2
 

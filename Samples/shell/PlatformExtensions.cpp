@@ -26,22 +26,23 @@
  *
  */
 
-#include "Shell_PlatformExtensions.h"
+#include "PlatformExtensions.h"
+#include <RmlUi/Core/Platform.h>
 
 #if defined RMLUI_PLATFORM_WIN32
 
-	#include <win32/IncludeWindows.h>
+	#include "RmlUi_IncludeWindows.h"
 	#include <io.h>
 	#include <shlwapi.h>
-
-#elif defined RMLUI_PLATFORM_LINUX
-
-	#include <X11/Xlib.h>
-	#include <dirent.h>
 
 #elif defined RMLUI_PLATFORM_MACOSX
 
 	#include <CoreFoundation/CoreFoundation.h>
+	#include <dirent.h>
+
+#elif defined RMLUI_PLATFORM_UNIX
+
+	#include <X11/Xlib.h>
 	#include <dirent.h>
 
 #endif
@@ -81,7 +82,29 @@ Rml::String PlatformExtensions::FindSamplesRoot()
 
 	return Rml::String();
 
-#elif defined RMLUI_PLATFORM_LINUX
+#elif defined RMLUI_PLATFORM_MACOSX
+
+	Rml::String path = "../../Samples/";
+
+	// Find the location of the executable.
+	CFBundleRef bundle = CFBundleGetMainBundle();
+	CFURLRef executable_url = CFBundleCopyExecutableURL(bundle);
+	CFStringRef executable_posix_file_name = CFURLCopyFileSystemPath(executable_url, kCFURLPOSIXPathStyle);
+	CFIndex max_length = CFStringGetMaximumSizeOfFileSystemRepresentation(executable_posix_file_name);
+	char* executable_file_name = new char[max_length];
+	if (!CFStringGetFileSystemRepresentation(executable_posix_file_name, executable_file_name, max_length))
+		executable_file_name[0] = 0;
+
+	Rml::String executable_path = Rml::String(executable_file_name);
+	executable_path = executable_path.substr(0, executable_path.rfind("/") + 1);
+
+	delete[] executable_file_name;
+	CFRelease(executable_posix_file_name);
+	CFRelease(executable_url);
+
+	return executable_path + "../../../" + path;
+
+#elif defined RMLUI_PLATFORM_UNIX
 
 	char executable_file_name[PATH_MAX];
 	ssize_t len = readlink("/proc/self/exe", executable_file_name, PATH_MAX);
@@ -121,28 +144,6 @@ Rml::String PlatformExtensions::FindSamplesRoot()
 
 	return Rml::String();
 
-#elif defined RMLUI_PLATFORM_MACOSX
-
-	Rml::String path = "../../Samples/";
-
-	// Find the location of the executable.
-	CFBundleRef bundle = CFBundleGetMainBundle();
-	CFURLRef executable_url = CFBundleCopyExecutableURL(bundle);
-	CFStringRef executable_posix_file_name = CFURLCopyFileSystemPath(executable_url, kCFURLPOSIXPathStyle);
-	CFIndex max_length = CFStringGetMaximumSizeOfFileSystemRepresentation(executable_posix_file_name);
-	char* executable_file_name = new char[max_length];
-	if (!CFStringGetFileSystemRepresentation(executable_posix_file_name, executable_file_name, max_length))
-		executable_file_name[0] = 0;
-
-	Rml::String executable_path = Rml::String(executable_file_name);
-	executable_path = executable_path.substr(0, executable_path.rfind("/") + 1);
-
-	delete[] executable_file_name;
-	CFRelease(executable_posix_file_name);
-	CFRelease(executable_url);
-
-	return executable_path + "../../../" + path;
-
 #else
 
 	return Rml::String();
@@ -150,7 +151,9 @@ Rml::String PlatformExtensions::FindSamplesRoot()
 #endif
 }
 
-Rml::StringList PlatformExtensions::ListFilesOrDirectories(ListType type, const Rml::String& directory, const Rml::String& extension)
+enum class ListType { Files, Directories };
+
+static Rml::StringList ListFilesOrDirectories(ListType type, const Rml::String& directory, const Rml::String& extension)
 {
 	if (directory.empty())
 		return Rml::StringList();
@@ -218,4 +221,14 @@ Rml::StringList PlatformExtensions::ListFilesOrDirectories(ListType type, const 
 #endif
 
 	return result;
+}
+
+Rml::StringList PlatformExtensions::ListDirectories(const Rml::String& in_directory)
+{
+	return ListFilesOrDirectories(ListType::Directories, in_directory, Rml::String());
+}
+
+Rml::StringList PlatformExtensions::ListFiles(const Rml::String& in_directory, const Rml::String& extension)
+{
+	return ListFilesOrDirectories(ListType::Files, in_directory, extension);
 }

@@ -26,58 +26,30 @@
  *
  */
 
-#ifndef RMLUI_BACKENDS_PLATFORM_WIN32_H
-#define RMLUI_BACKENDS_PLATFORM_WIN32_H
+#ifndef RMLUI_SHELL_SHELL_H
+#define RMLUI_SHELL_SHELL_H
 
-#include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
-#include "RmlUi_IncludeWindows.h"
 
-namespace Rml {
-namespace Input {
-	enum KeyIdentifier : int;
-}
-} // namespace Rml
+using ShellIdleFunction = void (*)();
 
-class SystemInterface_Win32 : public Rml::SystemInterface {
-public:
-	/// Get the number of seconds elapsed since the start of the application
-	double GetElapsedTime() override;
-
-	/// Set mouse cursor.
-	void SetMouseCursor(const Rml::String& cursor_name) override;
-
-	/// Set clipboard text.
-	void SetClipboardText(const Rml::String& text) override;
-
-	/// Get clipboard text.
-	void GetClipboardText(Rml::String& text) override;
-};
-
-using CallbackFuncAttachNative = bool (*)(void* window_handle);
-
-namespace RmlWin32 {
+namespace Shell {
 
 bool Initialize();
 void Shutdown();
 
-bool OpenWindow(const char* in_name, unsigned int& inout_width, unsigned int& inout_height, bool allow_resize, WNDPROC func_window_procedure,
-	CallbackFuncAttachNative func_attach_native);
+bool OpenWindow(const char* in_name, unsigned int width, unsigned int height, bool allow_resize);
 void CloseWindow();
 
-LRESULT WindowProcedure(HWND local_window_handle, UINT message, WPARAM w_param, LPARAM l_param);
+void LoadFonts();
+void SetContext(Rml::Context* new_context);
 
-void SetContextForInput(Rml::Context* context);
-float GetDensityIndependentPixelRatio();
+void EventLoop(ShellIdleFunction idle_function);
+void RequestExit();
 
-Rml::Input::KeyIdentifier ConvertKey(int win32_key_code);
-int GetKeyModifierState();
+void FrameBegin();
+void FramePresent();
 
-Rml::String ConvertToUTF8(const std::wstring& wstr);
-std::wstring ConvertToUTF16(const Rml::String& str);
-
-void DisplayError(const char* fmt, ...);
-
-} // namespace RmlWin32
+} // namespace Shell
 
 #endif

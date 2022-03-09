@@ -33,7 +33,7 @@
 #include <RmlUi/Core/Platform.h>
 
 #if defined RMLUI_PLATFORM_WIN32
-	#include "win32/IncludeWindows.h"
+	#include "RmlUi_IncludeWindows.h"
 	#include <gl/Gl.h>
 	#include <gl/Glu.h>
 #elif defined RMLUI_PLATFORM_MACOSX
@@ -366,9 +366,9 @@ void RmlGL2::Initialize()
 
 void RmlGL2::Shutdown() {}
 
-void RmlGL2::BeginFrame()
+void RmlGL2::FrameBegin()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void RmlGL2::EndFrame() {}
+void RmlGL2::FrameEnd() {}

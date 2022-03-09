@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,18 +26,40 @@
  *
  */
 
-#ifndef RMLUI_SHELL_PLATFORMEXTENSIONS_H
-#define RMLUI_SHELL_PLATFORMEXTENSIONS_H
+#ifndef RMLUI_SHELL_SHELLFILEINTERFACE_H
+#define RMLUI_SHELL_SHELLFILEINTERFACE_H
 
 #include <RmlUi/Core/Types.h>
+#include <RmlUi/Core/FileInterface.h>
 
-namespace PlatformExtensions {
+/**
+	RmlUi file interface for the shell examples.
+	@author Lloyd Weehuizen
+ */
 
-Rml::String FindSamplesRoot();
+class ShellFileInterface : public Rml::FileInterface
+{
+public:
+	ShellFileInterface(const Rml::String& root);
+	virtual ~ShellFileInterface();
 
-enum class ListType { Files, Directories };
-Rml::StringList ListFilesOrDirectories(ListType type, const Rml::String& directory, const Rml::String& extension);
+	/// Opens a file.		
+	Rml::FileHandle Open(const Rml::String& path) override;
 
-} // namespace PlatformExtensions
+	/// Closes a previously opened file.		
+	void Close(Rml::FileHandle file) override;
+
+	/// Reads data from a previously opened file.		
+	size_t Read(void* buffer, size_t size, Rml::FileHandle file) override;
+
+	/// Seeks to a point in a previously opened file.		
+	bool Seek(Rml::FileHandle file, long offset, int origin) override;
+
+	/// Returns the current position of the file pointer.		
+	size_t Tell(Rml::FileHandle file) override;
+
+private:
+	Rml::String root;
+};
 
 #endif

@@ -26,67 +26,66 @@
  *
  */
 
-#include <RmlUi/Core.h>
-#include <RmlUi/Debugger.h>
-#include <Shell.h>
-#if defined RMLUI_PLATFORM_WIN32
-	#include <RmlUi_IncludeWindows.h>
+#include "RendererExtensions.h"
+#include <RmlUi/Core/Log.h>
+#include <RmlUi/Core/Platform.h>
+
+#if defined RMLUI_RENDERER_GL2
+
+	#if defined RMLUI_PLATFORM_WIN32
+		#include "RmlUi_IncludeWindows.h"
+		#include <gl/Gl.h>
+		#include <gl/Glu.h>
+	#elif defined RMLUI_PLATFORM_MACOSX
+		#include <AGL/agl.h>
+		#include <OpenGL/gl.h>
+		#include <OpenGL/glext.h>
+		#include <OpenGL/glu.h>
+	#elif defined RMLUI_PLATFORM_UNIX
+		#include <GL/gl.h>
+		#include <GL/glext.h>
+		#include <GL/glu.h>
+		#include <GL/glx.h>
+	#endif
+
 #endif
 
-Rml::Context* context = nullptr;
-
-void GameLoop()
+RendererExtensions::Image RendererExtensions::CaptureScreen()
 {
-	context->Update();
+#if defined RMLUI_RENDERER_GL2
 
-	Shell::FrameBegin();
-	context->Render();
-	Shell::FramePresent();
-}
+	int viewport[4] = {}; // x, y, width, height
+	glGetIntegerv(GL_VIEWPORT, viewport);
 
-#if defined RMLUI_PLATFORM_WIN32
-int APIENTRY WinMain(HINSTANCE /*instance_handle*/, HINSTANCE /*previous_instance_handle*/, char* /*command_line*/, int /*command_show*/)
+	Image image;
+	image.num_components = 3;
+	image.width = viewport[2];
+	image.height = viewport[3];
+
+	if (image.width < 1 || image.height < 1)
+		return Image();
+
+	const int byte_size = image.width * image.height * image.num_components;
+	image.data = Rml::UniquePtr<Rml::byte[]>(new Rml::byte[byte_size]);
+
+	glReadPixels(0, 0, image.width, image.height, GL_RGB, GL_UNSIGNED_BYTE, image.data.get());
+
+	bool result = true;
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR)
+	{
+		result = false;
+		Rml::Log::Message(Rml::Log::LT_ERROR, "Could not capture screenshot, got GL error: 0x%x", err);
+	}
+
+	if (!result)
+		return Image();
+
+	return image;
+
 #else
-int main(int /*argc*/, char** /*argv*/)
+
+	return Image();
+
 #endif
-{
-	int window_width = 1024;
-	int window_height = 768;
-
-	// Generic OS initialisation, creates a window and attaches the renderer.
-	if (!Shell::Initialize() || !Shell::OpenWindow("Load Document Sample", window_width, window_height, true))
-	{
-		Shell::Shutdown();
-		return -1;
-	}
-
-	Rml::Initialise();
-
-	// Create the main RmlUi context.
-	context = Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
-	if (!context)
-	{
-		Rml::Shutdown();
-		Shell::CloseWindow();
-		Shell::Shutdown();
-		return -1;
-	}
-
-	Rml::Debugger::Initialise(context);
-	Shell::SetContext(context);
-	Shell::LoadFonts();
-
-	// Load and show the demo document.
-	if (Rml::ElementDocument* document = context->LoadDocument("assets/demo.rml"))
-		document->Show();
-
-	Shell::EventLoop(GameLoop);
-
-	// Shutdown RmlUi.
-	Rml::Shutdown();
-
-	Shell::CloseWindow();
-	Shell::Shutdown();
-
-	return 0;
 }

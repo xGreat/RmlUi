@@ -1,3 +1,4 @@
+#include "Shell.h"
 /*
  * This source file is part of RmlUi, the HTML/CSS Interface Middleware
  *

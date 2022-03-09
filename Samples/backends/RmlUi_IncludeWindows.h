@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,19 +26,22 @@
  *
  */
 
-#ifndef RMLUI_SHELL_SHELL_COMMON_H
-#define RMLUI_SHELL_SHELL_COMMON_H
+#ifndef RMLUI_BACKENDS_INCLUDEWINDOWS_H
+#define RMLUI_BACKENDS_INCLUDEWINDOWS_H
 
-#include <RmlUi/Core/Types.h>
+#if !defined _WIN32_WINNT || _WIN32_WINNT < 0x0601
+	#undef _WIN32_WINNT
+	// Target Windows 7
+	#define _WIN32_WINNT 0x0601
+#endif
 
-namespace Shell {
+#define UNICODE
+#define _UNICODE
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 
-bool Initialize();
-void LoadFonts();
-
-Rml::StringList ListDirectories(const Rml::String& in_directory);
-Rml::StringList ListFiles(const Rml::String& in_directory, const Rml::String& extension);
-
-} // namespace Shell
+#include <windows.h>
 
 #endif

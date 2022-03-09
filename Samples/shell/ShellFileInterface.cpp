@@ -15,7 +15,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,29 +26,50 @@
  *
  */
 
-#ifndef RMLUI_SHELL_SHELL_INTERFACE_H
-#define RMLUI_SHELL_SHELL_INTERFACE_H
+#include <ShellFileInterface.h>
+#include <stdio.h>
 
-#include <RmlUi/Core/Types.h>
+ShellFileInterface::ShellFileInterface(const Rml::String& root) : root(root)
+{
+}
 
-using ShellIdleFunction = void (*)();
+ShellFileInterface::~ShellFileInterface()
+{
+}
 
-namespace Shell {
+// Opens a file.
+Rml::FileHandle ShellFileInterface::Open(const Rml::String& path)
+{
+	// Attempt to open the file relative to the application's root.
+	FILE* fp = fopen((root + path).c_str(), "rb");
+	if (fp != nullptr)
+		return (Rml::FileHandle) fp;
 
-bool InitializeInterfaces();
-void ShutdownInterfaces();
+	// Attempt to open the file relative to the current working directory.
+	fp = fopen(path.c_str(), "rb");
+	return (Rml::FileHandle) fp;
+}
 
-bool OpenWindow(const char* in_name, unsigned int width, unsigned int height, bool allow_resize);
-void CloseWindow();
+// Closes a previously opened file.
+void ShellFileInterface::Close(Rml::FileHandle file)
+{
+	fclose((FILE*) file);
+}
 
-void SetContext(Rml::Context* new_context);
+// Reads data from a previously opened file.
+size_t ShellFileInterface::Read(void* buffer, size_t size, Rml::FileHandle file)
+{
+	return fread(buffer, 1, size, (FILE*) file);
+}
 
-void EventLoop(ShellIdleFunction idle_function);
-void RequestExit();
+// Seeks to a point in a previously opened file.
+bool ShellFileInterface::Seek(Rml::FileHandle file, long offset, int origin)
+{
+	return fseek((FILE*) file, offset, origin) == 0;
+}
 
-void BeginFrame();
-void EndFrame();
-
-} // namespace Shell
-
-#endif
+// Returns the current position of the file pointer.
+size_t ShellFileInterface::Tell(Rml::FileHandle file)
+{
+	return ftell((FILE*) file);
+}
