@@ -132,9 +132,9 @@ TEST_CASE("elementdocument")
 			ElementDocument* document = context->LoadDocumentFromMemory(document_rml);
 			document->Show();
 			context->Update();
-			TestsShell::PrepareRenderBuffer();
+			TestsShell::FrameBegin();
 			context->Render();
-			TestsShell::PresentRenderBuffer();
+			TestsShell::FramePresent();
 			document->Close();
 			context->Update();
 		});
@@ -176,9 +176,9 @@ TEST_CASE("elementdocument")
 			ElementDocument* document = context->LoadDocumentFromMemory(document_rml);
 			document->Show();
 			context->Update();
-			TestsShell::PrepareRenderBuffer();
+			TestsShell::FrameBegin();
 			context->Render();
-			TestsShell::PresentRenderBuffer();
+			TestsShell::FramePresent();
 			document->Close();
 			context->Update();
 		});

@@ -30,7 +30,7 @@
 #include <Shell.h>
 #include <RmlUi/Core/Types.h>
 #include <RmlUi/Core/StringUtilities.h>
-
+#include <PlatformExtensions.h>
 
 Rml::String GetCompareInputDirectory()
 {
@@ -54,7 +54,7 @@ Rml::String GetCaptureOutputDirectory()
 
 Rml::StringList GetTestInputDirectories()
 {
-	const Rml::String samples_root = Shell::FindSamplesRoot();
+	const Rml::String samples_root = PlatformExtensions::FindSamplesRoot();
 
 	Rml::StringList directories = { samples_root + "../Tests/Data/VisualTests" };
 
