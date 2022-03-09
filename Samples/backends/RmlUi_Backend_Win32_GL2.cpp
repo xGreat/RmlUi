@@ -28,13 +28,13 @@
 
 #include "RmlUi_Backend.h"
 #include "RmlUi_IncludeWindows.h"
+#include "RmlUi_Platform_Win32.h"
+#include "RmlUi_Renderer_GL2.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Debugger/Debugger.h>
-#include <RmlUi_Platform_Win32.h>
-#include <RmlUi_Renderer_GL2.h>
 
 #ifndef WM_DPICHANGED
 	#define WM_DPICHANGED 0x02E0
