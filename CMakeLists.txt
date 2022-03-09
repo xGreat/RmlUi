@@ -682,7 +682,36 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	target_link_libraries(shell PUBLIC RmlCore)
 	
 	add_common_target_options(shell)
-
+	
+	# Add the new shell
+	list(APPEND shell_v2_SRC_FILES
+		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.cpp
+		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_Win32_GL2.cpp
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_Common.cpp
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_PlatformExtensions.cpp
+	)
+	list(APPEND shell_v2_HDR_FILES
+		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
+		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_Interface.h
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_Common.h
+		${PROJECT_SOURCE_DIR}/Samples/shell/Shell_PlatformExtensions.h
+	)
+	
+	include_directories(${PROJECT_SOURCE_DIR}/Samples/backends)
+	include_directories(${PROJECT_SOURCE_DIR}/Samples/shell)
+	
+	add_library(shell_v2 STATIC ${shell_v2_SRC_FILES} ${shell_v2_HDR_FILES})
+	
+	if (WIN32)
+		target_link_libraries(shell_v2 PUBLIC shlwapi)
+	endif()
+	
+	target_link_libraries(shell_v2 PUBLIC RmlCore)
+	
+	add_common_target_options(shell_v2)
+	
 endif()
 
 
@@ -700,6 +729,9 @@ if(BUILD_SAMPLES)
 			RUNTIME DESTINATION ${SAMPLES_DIR}/${sample}
 			BUNDLE DESTINATION ${SAMPLES_DIR})
 	endforeach()
+	
+	# TODO: Temporary test for shell_v2
+	target_link_libraries(loaddocument shell_v2)
 	
 	message("-- Can SDL2 samples be built")
 	find_package(SDL2)
