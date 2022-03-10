@@ -35,7 +35,7 @@
 
 namespace Rml {
 namespace Input {
-	enum KeyIdentifier : int;
+	enum KeyIdentifier : unsigned char;
 }
 } // namespace Rml
 
