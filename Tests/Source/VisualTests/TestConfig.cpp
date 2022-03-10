@@ -37,7 +37,7 @@ Rml::String GetCompareInputDirectory()
 #ifdef RMLUI_VISUAL_TESTS_COMPARE_DIRECTORY
 	const Rml::String input_directory = Rml::String(RMLUI_VISUAL_TESTS_COMPARE_DIRECTORY);
 #else
-	const Rml::String input_directory = Shell::FindSamplesRoot() + "../Tests/Output";
+	const Rml::String input_directory = PlatformExtensions::FindSamplesRoot() + "../Tests/Output";
 #endif
 	return input_directory;
 }
@@ -47,7 +47,7 @@ Rml::String GetCaptureOutputDirectory()
 #ifdef RMLUI_VISUAL_TESTS_CAPTURE_DIRECTORY
 	const Rml::String output_directory = Rml::String(RMLUI_VISUAL_TESTS_CAPTURE_DIRECTORY);
 #else
-	const Rml::String output_directory = Shell::FindSamplesRoot() + "../Tests/Output";
+	const Rml::String output_directory = PlatformExtensions::FindSamplesRoot() + "../Tests/Output";
 #endif
 	return output_directory;
 }

@@ -37,7 +37,7 @@
 #include <doctest.h>
 
 // Uncomment the following to render to the shell window instead of the dummy renderer. Useful for viewing the result while building RML.
-#define RMLUI_TESTS_USE_SHELL
+//#define RMLUI_TESTS_USE_SHELL
 
 namespace {
 	const Rml::Vector2i window_size(1500, 800);
