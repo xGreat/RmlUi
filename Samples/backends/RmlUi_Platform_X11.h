@@ -29,7 +29,7 @@
 #ifndef RMLUI_BACKENDS_PLATFORM_X11_H
 #define RMLUI_BACKENDS_PLATFORM_X11_H
 
-#include "RmlUi_IncludeXlib.h"
+#include "RmlUi_Include_Xlib.h"
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
 #include <X11/Xutil.h>

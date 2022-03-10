@@ -31,7 +31,7 @@
 
 #if defined RMLUI_PLATFORM_WIN32
 
-	#include "RmlUi_IncludeWindows.h"
+	#include <RmlUi_Include_Windows.h>
 	#include <io.h>
 	#include <shlwapi.h>
 

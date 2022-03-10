@@ -33,7 +33,7 @@
 #if defined RMLUI_RENDERER_GL2
 
 	#if defined RMLUI_PLATFORM_WIN32
-		#include "RmlUi_IncludeWindows.h"
+		#include <RmlUi_Include_Windows.h>
 		#include <gl/Gl.h>
 		#include <gl/Glu.h>
 	#elif defined RMLUI_PLATFORM_MACOSX
@@ -42,6 +42,7 @@
 		#include <OpenGL/glext.h>
 		#include <OpenGL/glu.h>
 	#elif defined RMLUI_PLATFORM_UNIX
+		#include <RmlUi_Include_Xlib.h>
 		#include <GL/gl.h>
 		#include <GL/glext.h>
 		#include <GL/glu.h>

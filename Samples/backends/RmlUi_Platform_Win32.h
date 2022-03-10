@@ -31,7 +31,7 @@
 
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
-#include "RmlUi_IncludeWindows.h"
+#include "RmlUi_Include_Windows.h"
 
 namespace Rml {
 namespace Input {

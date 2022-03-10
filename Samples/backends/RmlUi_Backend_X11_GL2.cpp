@@ -27,7 +27,7 @@
  */
 
 #include "RmlUi_Backend.h"
-#include "RmlUi_IncludeXlib.h"
+#include "RmlUi_Include_Xlib.h"
 #include "RmlUi_Platform_X11.h"
 #include "RmlUi_Renderer_GL2.h"
 #include <RmlUi/Core/Context.h>

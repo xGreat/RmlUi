@@ -27,7 +27,7 @@
  */
 
 #include "RmlUi_Platform_Win32.h"
-#include "RmlUi_IncludeWindows.h"
+#include "RmlUi_Include_Windows.h"
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/Input.h>

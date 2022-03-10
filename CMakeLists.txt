@@ -711,6 +711,7 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 		)
 		list(APPEND shell_HDR_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Windows.h
 		)
 	else()
 		list(APPEND shell_SRC_FILES
@@ -719,6 +720,7 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 		)
 		list(APPEND shell_HDR_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Xlib.h
 		)
 	endif()
 		

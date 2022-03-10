@@ -27,7 +27,7 @@
  */
 
 #include "RmlUi_Backend.h"
-#include "RmlUi_IncludeWindows.h"
+#include "RmlUi_Include_Windows.h"
 #include "RmlUi_Platform_Win32.h"
 #include "RmlUi_Renderer_GL2.h"
 #include <RmlUi/Core/Context.h>
