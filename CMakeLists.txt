@@ -689,16 +689,13 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	
 	# Add the new shell
 	list(APPEND shell_SRC_FILES
-		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.cpp
 		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp
-		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_Win32_GL2.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/Shell.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/ShellFileInterface.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/PlatformExtensions.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/RendererExtensions.cpp
 	)
 	list(APPEND shell_HDR_FILES
-		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
 		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
 		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend.h
 		${PROJECT_SOURCE_DIR}/Samples/shell/Shell.h
@@ -706,6 +703,26 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 		${PROJECT_SOURCE_DIR}/Samples/shell/PlatformExtensions.h
 		${PROJECT_SOURCE_DIR}/Samples/shell/RendererExtensions.h
 	)
+	
+	if(WIN32)
+		list(APPEND shell_SRC_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_Win32_GL2.cpp
+		)
+		list(APPEND shell_HDR_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
+		)
+	else()
+		list(APPEND shell_SRC_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_X11_GL2.cpp
+		)
+		list(APPEND shell_HDR_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.h
+		)
+	endif()
+		
+	
 	
 	include_directories(${PROJECT_SOURCE_DIR}/Samples/backends)
 	include_directories(${PROJECT_SOURCE_DIR}/Samples/shell)

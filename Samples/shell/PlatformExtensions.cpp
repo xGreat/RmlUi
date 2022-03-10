@@ -43,6 +43,8 @@
 #elif defined RMLUI_PLATFORM_UNIX
 
 	#include <X11/Xlib.h>
+	#include <unistd.h>
+	#include <sys/stat.h>
 	#include <dirent.h>
 
 #endif
@@ -128,6 +130,11 @@ Rml::String PlatformExtensions::FindSamplesRoot()
 	// If "../" is valid we are probably in the installation directory.
 	// Some build setups may nest the executables deeper in a build directory, try them last.
 	const char* candidate_paths[] = {"", "../", "../Samples/", "../../Samples/", "../../../Samples/", "../../../../Samples/"};
+
+	auto isRegularFile = [](const Rml::String& path) -> bool {
+		struct stat sb;
+		return stat(path.c_str(), &sb) == 0 && S_ISREG(sb.st_mode);
+	};
 
 	for (const char* relative_path : candidate_paths)
 	{

@@ -42,17 +42,11 @@
 	#include <OpenGL/glext.h>
 	#include <OpenGL/glu.h>
 #elif defined RMLUI_PLATFORM_UNIX
+	#include "RmlUi_IncludeXlib.h"
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include <GL/glu.h>
 	#include <GL/glx.h>
-	#include <x11/X11MacroZapper.h>
-
-struct __X11NativeWindowData {
-	Window window;
-	Display* display;
-	XVisualInfo* visual_info;
-};
 #endif
 
 #define GL_CLAMP_TO_EDGE 0x812F
