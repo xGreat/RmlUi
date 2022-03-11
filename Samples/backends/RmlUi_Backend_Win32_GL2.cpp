@@ -64,8 +64,8 @@ static void UpdateWindowDimensions(int width = 0, int height = 0)
 		window_height = height;
 	if (context)
 		context->SetDimensions(Rml::Vector2i(window_width, window_height));
-	if (render_interface)
-		render_interface->SetViewport(window_width, window_height);
+
+	RmlGL2::SetViewport(window_width, window_height);
 }
 static void SetContextDpRatio()
 {
@@ -73,7 +73,7 @@ static void SetContextDpRatio()
 		context->SetDensityIndependentPixelRatio(RmlWin32::GetDensityIndependentPixelRatio());
 }
 
-static bool AttachToNative(void* nativeWindow);
+static bool AttachToNative();
 static void DetachFromNative();
 
 static void ProcessKeyDown(Rml::Input::KeyIdentifier key_identifier, const int key_modifier_state);
@@ -148,18 +148,22 @@ bool Backend::OpenWindow(const char* in_name, unsigned int width, unsigned int h
 	if (!RmlWin32::Initialize())
 		return false;
 
-	auto func_attach_to_native = [](void* native_window_handle) -> bool {
-		if (!AttachToNative(native_window_handle))
-		{
-			CloseWindow();
-			return false;
-		}
-		UpdateWindowDimensions();
-		return true;
-	};
+	// Initialize the window but don't show it yet.
+	if (!RmlWin32::InitializeWindow(in_name, width, height, allow_resize, window_handle, WindowProcedureHandler))
+		return false;
+	
+	// Attach the OpenGL context.
+	if (!AttachToNative())
+	{
+		CloseWindow();
+		return false;
+	}
 
-	bool result = RmlWin32::OpenWindow(in_name, width, height, allow_resize, WindowProcedureHandler, func_attach_to_native);
-	return result;
+	// Now we are ready to show the window.
+	RmlWin32::ShowWindow();
+	UpdateWindowDimensions();
+
+	return true;
 }
 
 void Backend::CloseWindow()
@@ -217,9 +221,9 @@ void Backend::SetContext(Rml::Context* new_context)
 	UpdateWindowDimensions();
 }
 
-static bool AttachToNative(void* in_window_handle)
+static bool AttachToNative()
 {
-	window_handle = (HWND)in_window_handle;
+	RMLUI_ASSERT(window_handle);
 	device_context = GetDC(window_handle);
 	render_context = nullptr;
 

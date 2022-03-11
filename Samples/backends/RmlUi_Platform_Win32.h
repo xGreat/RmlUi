@@ -29,9 +29,9 @@
 #ifndef RMLUI_BACKENDS_PLATFORM_WIN32_H
 #define RMLUI_BACKENDS_PLATFORM_WIN32_H
 
+#include "RmlUi_Include_Windows.h"
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
-#include "RmlUi_Include_Windows.h"
 
 namespace Rml {
 namespace Input {
@@ -54,27 +54,23 @@ public:
 	void GetClipboardText(Rml::String& text) override;
 };
 
-using CallbackFuncAttachNative = bool (*)(void* window_handle);
-
 namespace RmlWin32 {
 
 bool Initialize();
 void Shutdown();
 
-bool OpenWindow(const char* in_name, unsigned int& inout_width, unsigned int& inout_height, bool allow_resize, WNDPROC func_window_procedure,
-	CallbackFuncAttachNative func_attach_native);
+bool InitializeWindow(const char* in_name, unsigned int& inout_width, unsigned int& inout_height, bool allow_resize, HWND& out_window_handle,
+	WNDPROC func_window_procedure);
+void ShowWindow();
 void CloseWindow();
 
 LRESULT WindowProcedure(HWND local_window_handle, UINT message, WPARAM w_param, LPARAM l_param);
 
-void SetContextForInput(Rml::Context* context);
 float GetDensityIndependentPixelRatio();
+void SetContextForInput(Rml::Context* context);
 
 Rml::Input::KeyIdentifier ConvertKey(int win32_key_code);
 int GetKeyModifierState();
-
-Rml::String ConvertToUTF8(const std::wstring& wstr);
-std::wstring ConvertToUTF16(const Rml::String& str);
 
 void DisplayError(const char* fmt, ...);
 

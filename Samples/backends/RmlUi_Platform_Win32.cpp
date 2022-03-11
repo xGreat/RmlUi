@@ -39,7 +39,7 @@ static void InitialiseKeymap();
 
 static constexpr int KEYMAP_SIZE = 256;
 static Rml::Input::KeyIdentifier key_identifier_map[KEYMAP_SIZE];
-static Rml::Context* context_for_input_processing = nullptr;
+static Rml::Context* context = nullptr;
 
 static HWND window_handle = nullptr;
 static HINSTANCE instance_handle = nullptr;
@@ -85,7 +85,7 @@ static void UpdateWindowDpi()
 	}
 }
 
-Rml::String RmlWin32::ConvertToUTF8(const std::wstring& wstr)
+static Rml::String ConvertToUTF8(const std::wstring& wstr)
 {
 	const int count = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.length(), NULL, 0, NULL, NULL);
 	Rml::String str(count, 0);
@@ -93,7 +93,7 @@ Rml::String RmlWin32::ConvertToUTF8(const std::wstring& wstr)
 	return str;
 }
 
-std::wstring RmlWin32::ConvertToUTF16(const Rml::String& str)
+static std::wstring ConvertToUTF16(const Rml::String& str)
 {
 	const int count = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.length(), NULL, 0);
 	std::wstring wstr(count, 0);
@@ -146,7 +146,7 @@ void SystemInterface_Win32::SetClipboardText(const Rml::String& text_utf8)
 
 		EmptyClipboard();
 
-		const std::wstring text = RmlWin32::ConvertToUTF16(text_utf8);
+		const std::wstring text = ConvertToUTF16(text_utf8);
 		const size_t size = sizeof(wchar_t) * (text.size() + 1);
 
 		HGLOBAL clipboard_data = GlobalAlloc(GMEM_FIXED, size);
@@ -178,7 +178,7 @@ void SystemInterface_Win32::GetClipboardText(Rml::String& text)
 
 		const wchar_t* clipboard_text = (const wchar_t*)GlobalLock(clipboard_data);
 		if (clipboard_text)
-			text = RmlWin32::ConvertToUTF8(clipboard_text);
+			text = ConvertToUTF8(clipboard_text);
 		GlobalUnlock(clipboard_data);
 
 		CloseClipboard();
@@ -205,14 +205,29 @@ bool RmlWin32::Initialize()
 	cursor_text = LoadCursor(nullptr, IDC_IBEAM);
 	cursor_unavailable = LoadCursor(nullptr, IDC_NO);
 
+	// See if we have Per Monitor V2 DPI awareness. Requires Windows 10, version 1703.
+	// Cast function pointers to void* first for MinGW not to emit errors.
+	procSetProcessDpiAwarenessContext =
+		(ProcSetProcessDpiAwarenessContext)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "SetProcessDpiAwarenessContext");
+	procGetDpiForWindow = (ProcGetDpiForWindow)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "GetDpiForWindow");
+	procAdjustWindowRectExForDpi =
+		(ProcAdjustWindowRectExForDpi)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "AdjustWindowRectExForDpi");
+
+	if (!has_dpi_support && procSetProcessDpiAwarenessContext != NULL && procGetDpiForWindow != NULL && procAdjustWindowRectExForDpi != NULL)
+	{
+		// Activate Per Monitor V2.
+		if (procSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+			has_dpi_support = true;
+	}
+
 	return true;
 }
 
 void RmlWin32::Shutdown() {}
 
-void RmlWin32::SetContextForInput(Rml::Context* context)
+void RmlWin32::SetContextForInput(Rml::Context* new_context)
 {
-	context_for_input_processing = context;
+	context = new_context;
 }
 
 LRESULT RmlWin32::WindowProcedure(HWND local_window_handle, UINT message, WPARAM w_param, LPARAM l_param)
@@ -225,9 +240,10 @@ LRESULT RmlWin32::WindowProcedure(HWND local_window_handle, UINT message, WPARAM
 	{
 		UpdateWindowDpi();
 
-		RECT* const new_pos = (RECT*)l_param;
-		SetWindowPos(window_handle, NULL, new_pos->left, new_pos->top, new_pos->right - new_pos->left, new_pos->bottom - new_pos->top,
+		RECT* new_pos = (RECT*)l_param;
+		SetWindowPos(local_window_handle, NULL, new_pos->left, new_pos->top, new_pos->right - new_pos->left, new_pos->bottom - new_pos->top,
 			SWP_NOZORDER | SWP_NOACTIVATE);
+
 		result = 0;
 	}
 	break;
@@ -241,25 +257,10 @@ LRESULT RmlWin32::WindowProcedure(HWND local_window_handle, UINT message, WPARAM
 	return result;
 }
 
-bool RmlWin32::OpenWindow(const char* in_name, unsigned int& inout_width, unsigned int& inout_height, bool allow_resize,
-	WNDPROC func_window_procedure, CallbackFuncAttachNative func_attach_native)
+bool RmlWin32::InitializeWindow(const char* in_name, unsigned int& inout_width, unsigned int& inout_height, bool allow_resize,
+	HWND& out_window_handle, WNDPROC func_window_procedure)
 {
-	// See if we have Per Monitor V2 DPI awareness. Requires Windows 10, version 1703.
-	// Cast function pointers to void* first for MinGW not to emit errors.
-	procSetProcessDpiAwarenessContext =
-		(ProcSetProcessDpiAwarenessContext)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "SetProcessDpiAwarenessContext");
-	procGetDpiForWindow = (ProcGetDpiForWindow)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "GetDpiForWindow");
-	procAdjustWindowRectExForDpi =
-		(ProcAdjustWindowRectExForDpi)(void*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "AdjustWindowRectExForDpi");
-
-	if (procSetProcessDpiAwarenessContext != NULL && procGetDpiForWindow != NULL && procAdjustWindowRectExForDpi != NULL)
-	{
-		// Activate Per Monitor V2.
-		if (procSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
-			has_dpi_support = true;
-	}
-
-	const std::wstring name = RmlWin32::ConvertToUTF16(Rml::String(in_name));
+	const std::wstring name = ConvertToUTF16(Rml::String(in_name));
 
 	// Fill out the window class struct.
 	WNDCLASSW window_class;
@@ -317,24 +318,26 @@ bool RmlWin32::OpenWindow(const char* in_name, unsigned int& inout_width, unsign
 	SetWindowLong(window_handle, GWL_EXSTYLE, extended_style);
 	SetWindowLong(window_handle, GWL_STYLE, style);
 
-	if (!func_attach_native((void*)window_handle))
-		return false;
-
 	// Resize the window.
 	SetWindowPos(window_handle, HWND_TOP, 0, 0, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, SWP_NOACTIVATE);
 
-	// Display the new window
+	out_window_handle = window_handle;
+
+	return true;
+}
+
+void RmlWin32::ShowWindow()
+{
 	ShowWindow(window_handle, SW_SHOW);
 	SetForegroundWindow(window_handle);
 	SetFocus(window_handle);
-
-	return true;
 }
 
 void RmlWin32::CloseWindow()
 {
 	DestroyWindow(window_handle);
 	UnregisterClassW((LPCWSTR)instance_name.data(), instance_handle);
+	window_handle = nullptr;
 }
 
 void RmlWin32::DisplayError(const char* fmt, ...)
@@ -394,7 +397,6 @@ int RmlWin32::GetKeyModifierState()
 
 static bool ProcessInputEvent(HWND window, UINT message, WPARAM w_param, LPARAM l_param)
 {
-	Rml::Context* context = context_for_input_processing;
 	bool result = true;
 
 	if (!context)
@@ -465,7 +467,7 @@ static bool ProcessInputEvent(HWND window, UINT message, WPARAM w_param, LPARAM 
 			if (c >= 0xDC00 && c < 0xE000 && first_u16_code_unit != 0)
 			{
 				// Second 16-bit code unit of a two-wide character.
-				Rml::String utf8 = RmlWin32::ConvertToUTF8(std::wstring{first_u16_code_unit, c});
+				Rml::String utf8 = ConvertToUTF8(std::wstring{first_u16_code_unit, c});
 				character = Rml::StringUtilities::ToCharacter(utf8.data());
 			}
 			else if (c == '\r')

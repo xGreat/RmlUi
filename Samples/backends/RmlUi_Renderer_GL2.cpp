@@ -51,6 +51,10 @@
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
+static bool initialized = false;
+static int viewport_width = 0;
+static int viewport_height = 0;
+
 RenderInterface_GL2::RenderInterface_GL2() {}
 
 // Called by RmlUi when it wants to render geometry that it does not wish to optimise.
@@ -323,9 +327,34 @@ void RenderInterface_GL2::SetTransform(const Rml::Matrix4f* transform)
 		glLoadIdentity();
 }
 
-void RenderInterface_GL2::SetViewport(int width, int height)
+void RmlGL2::Initialize()
 {
-	if (viewport_width != width || viewport_height != height)
+	// Set up the GL state
+	glClearColor(0, 0, 0, 1);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	initialized = true;
+}
+
+void RmlGL2::Shutdown()
+{
+	initialized = false;
+	viewport_width = 0;
+	viewport_height = 0;
+}
+
+void RmlGL2::SetViewport(int width, int height)
+{
+	if (initialized && (viewport_width != width || viewport_height != height))
 	{
 		Rml::Matrix4f projection, view;
 
@@ -341,24 +370,6 @@ void RenderInterface_GL2::SetViewport(int width, int height)
 		glLoadMatrixf(view.data());
 	}
 }
-
-void RmlGL2::Initialize()
-{
-	// Set up the GL state
-	glClearColor(0, 0, 0, 1);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-}
-
-void RmlGL2::Shutdown() {}
 
 void RmlGL2::FrameBegin()
 {

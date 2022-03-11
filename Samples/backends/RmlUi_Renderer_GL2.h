@@ -64,18 +64,14 @@ public:
 
 	/// Called by RmlUi when it wants to set the current transform matrix to a new matrix.
 	void SetTransform(const Rml::Matrix4f* transform) override;
-
-	// -- Extensions
-	void SetViewport(int width, int height);
-
-private:
-	int viewport_width = 0, viewport_height = 0;
 };
 
 namespace RmlGL2 {
 
 void Initialize();
 void Shutdown();
+
+void SetViewport(int width, int height);
 
 void FrameBegin();
 void FrameEnd();

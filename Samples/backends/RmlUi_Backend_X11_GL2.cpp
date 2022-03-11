@@ -77,8 +77,8 @@ static void UpdateWindowDimensions(int width = 0, int height = 0)
 		window_height = height;
 	if (context)
 		context->SetDimensions(Rml::Vector2i(window_width, window_height));
-	if (render_interface)
-		render_interface->SetViewport(window_width, window_height);
+	
+	RmlGL2::SetViewport(window_width, window_height);
 }
 
 static bool AttachToNative(XVisualInfo* visual_info)
@@ -139,7 +139,7 @@ bool Backend::OpenWindow(const char* in_name, unsigned int width, unsigned int h
 	window_width = width;
 	window_height = height;
 
-	// This initializes the keyboard to keycode mapping system of X11  itself. It must be done here after opening display as it needs to query the
+	// This initializes the keyboard to keycode mapping system of X11 itself. It must be done here after opening display as it needs to query the
 	// connected X server display for information about its install keymap abilities.
 	RmlX11::Initialize(display);
 
