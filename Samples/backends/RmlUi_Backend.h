@@ -46,8 +46,8 @@ void SetContext(Rml::Context* new_context);
 void EventLoop(ShellIdleFunction idle_function);
 void RequestExit();
 
-void FrameBegin();
-void FramePresent();
+void BeginFrame();
+void PresentFrame();
 
 } // namespace Backend
 

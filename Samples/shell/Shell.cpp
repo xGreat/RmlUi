@@ -103,13 +103,13 @@ void Shell::RequestExit()
 	Backend::RequestExit();
 }
 
-void Shell::FrameBegin()
+void Shell::BeginFrame()
 {
-	Backend::FrameBegin();
+	Backend::BeginFrame();
 }
 
-void Shell::FramePresent()
+void Shell::PresentFrame()
 {
-	Backend::FramePresent();
+	Backend::PresentFrame();
 	RMLUI_FrameMark;
 }

@@ -200,14 +200,14 @@ void Backend::RequestExit()
 	running = false;
 }
 
-void Backend::FrameBegin()
+void Backend::BeginFrame()
 {
-	RmlGL2::FrameBegin();
+	RmlGL2::BeginFrame();
 }
 
-void Backend::FramePresent()
+void Backend::PresentFrame()
 {
-	RmlGL2::FrameEnd();
+	RmlGL2::EndFrame();
 
 	// Flips the OpenGL buffers.
 	SwapBuffers(device_context);

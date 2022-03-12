@@ -107,17 +107,17 @@ Rml::Context* TestsShell::GetContext()
 	return shell_context;
 }
 
-void TestsShell::FrameBegin()
+void TestsShell::BeginFrame()
 {
 #ifdef RMLUI_TESTS_USE_SHELL
-	Shell::FrameBegin();
+	Shell::BeginFrame();
 #endif
 }
 
-void TestsShell::FramePresent()
+void TestsShell::PresentFrame()
 {
 #ifdef RMLUI_TESTS_USE_SHELL
-	Shell::FramePresent();
+	Shell::PresentFrame();
 #endif
 }
 
@@ -128,9 +128,9 @@ void TestsShell::RenderLoop()
 #if defined(RMLUI_TESTS_USE_SHELL)
 	Shell::EventLoop([]() {
 		shell_context->Update();
-		FrameBegin();
+		BeginFrame();
 		shell_context->Render();
-		FramePresent();
+		PresentFrame();
 	});
 #else
 	shell_context->Update();

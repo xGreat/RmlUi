@@ -371,9 +371,9 @@ void RmlGL2::SetViewport(int width, int height)
 	}
 }
 
-void RmlGL2::FrameBegin()
+void RmlGL2::BeginFrame()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void RmlGL2::FrameEnd() {}
+void RmlGL2::EndFrame() {}

@@ -46,13 +46,13 @@ void GameLoop()
 {
 	context->Update();
 
-	Shell::FrameBegin();
+	Shell::BeginFrame();
 	context->Render();
 
 	if (g_navigator)
 		g_navigator->Render();
 
-	Shell::FramePresent();
+	Shell::PresentFrame();
 
 	if (g_navigator)
 		g_navigator->Update();

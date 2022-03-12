@@ -73,8 +73,8 @@ void Shutdown();
 
 void SetViewport(int width, int height);
 
-void FrameBegin();
-void FrameEnd();
+void BeginFrame();
+void EndFrame();
 
 } // namespace RmlGL2
 

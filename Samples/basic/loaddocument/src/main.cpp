@@ -36,9 +36,9 @@ void GameLoop()
 {
 	context->Update();
 
-	Shell::FrameBegin();
+	Shell::BeginFrame();
 	context->Render();
-	Shell::FramePresent();
+	Shell::PresentFrame();
 }
 
 #if defined RMLUI_PLATFORM_WIN32

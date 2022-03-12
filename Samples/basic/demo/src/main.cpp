@@ -263,9 +263,9 @@ void GameLoop()
 	demo_window->Update();
 	context->Update();
 
-	Shell::FrameBegin();
+	Shell::BeginFrame();
 	context->Render();
-	Shell::FramePresent();
+	Shell::PresentFrame();
 }
 
 
