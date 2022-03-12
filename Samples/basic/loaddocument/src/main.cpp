@@ -51,7 +51,7 @@ int main(int /*argc*/, char** /*argv*/)
 	int window_width = 1024;
 	int window_height = 768;
 
-	// Generic OS initialisation, creates a window and attaches the renderer.
+	// Initializes and sets the system and render interfaces, creates a window, and attaches the renderer.
 	if (!Shell::Initialize() || !Shell::OpenWindow("Load Document Sample", window_width, window_height, true))
 	{
 		Shell::Shutdown();
@@ -66,7 +66,6 @@ int main(int /*argc*/, char** /*argv*/)
 	if (!context)
 	{
 		Rml::Shutdown();
-		Shell::CloseWindow();
 		Shell::Shutdown();
 		return -1;
 	}

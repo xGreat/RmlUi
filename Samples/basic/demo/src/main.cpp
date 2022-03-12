@@ -450,7 +450,7 @@ int main(int /*argc*/, char** /*argv*/)
 	const int width = 1600;
 	const int height = 890;
 
-	// Generic OS initialisation, creates a window and attaches the renderer.
+	// Initializes and sets the system and render interfaces, creates a window, and attaches the renderer.
 	if (!Shell::Initialize() || !Shell::OpenWindow("Demo Sample", width, height, true))
 	{
 		Shell::Shutdown();

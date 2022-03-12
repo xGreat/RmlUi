@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	int window_width = 1500;
 	int window_height = 800;
 
-	// Generic OS initialisation, creates a window and attaches the renderer.
+	// Initializes and sets the system and render interfaces, creates a window, and attaches the renderer.
 	if (!Shell::Initialize() || !Shell::OpenWindow("Visual tests", window_width, window_height, true))
 	{
 		Shell::Shutdown();
@@ -98,7 +98,6 @@ int main(int argc, char** argv)
 
 	Rml::Debugger::Initialise(context);
 	Shell::SetContext(context);
-
 	Shell::LoadFonts();
 
 	{
