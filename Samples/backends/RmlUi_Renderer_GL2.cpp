@@ -362,18 +362,20 @@ void RmlGL2::SetViewport(int width, int height)
 		viewport_height = height;
 
 		glViewport(0, 0, width, height);
-		projection = Rml::Matrix4f::ProjectOrtho(0, (float)width, (float)height, 0, -10000, 10000);
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(projection.data());
-		view = Rml::Matrix4f::Identity();
-		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(view.data());
 	}
 }
 
 void RmlGL2::BeginFrame()
 {
+	RMLUI_ASSERT(viewport_width > 0 && viewport_height > 0);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	Rml::Matrix4f projection = Rml::Matrix4f::ProjectOrtho(0, (float)viewport_width, (float)viewport_height, 0, -10000, 10000);
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(projection.data());
+	Rml::Matrix4f view = Rml::Matrix4f::Identity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(view.data());
 }
 
 void RmlGL2::EndFrame() {}

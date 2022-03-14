@@ -69,7 +69,7 @@ list(APPEND CORE_PRIVATE_DEFS RMLUI_VERSION="${RMLUI_VERSION_SHORT}")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	option(BUILD_TESTING "" OFF)
-    include(CTest)
+	include(CTest)
 	
 	if(BUILD_TESTING)
 		set(RMLUI_TESTS_ENABLED ON)
@@ -162,6 +162,27 @@ if(APPLE)
 endif()
 
 option(BUILD_SAMPLES "Build samples" OFF)
+
+set(SAMPLES_BACKEND "Auto" CACHE STRING "Backend platform and renderer used for the samples.")
+set_property(CACHE SAMPLES_BACKEND PROPERTY STRINGS Auto Win32_GL2 SDL_GL2 X11_GL2)
+
+if(SAMPLES_BACKEND STREQUAL "Auto")
+  if(WIN32)
+	  set(SAMPLES_BACKEND Win32_GL2)
+  else()
+	  set(SAMPLES_BACKEND X11_GL2)
+	endif()
+endif()
+
+if(WIN32)
+	if(SAMPLES_BACKEND STREQUAL "X11_GL2")
+		message(FATAL_ERROR "The selected backend '${SAMPLES_BACKEND}' is unsupported on Win32.")
+	endif()
+else()
+	if(SAMPLES_BACKEND STREQUAL "Win32_GL2")
+		message(FATAL_ERROR "The selected backend '${SAMPLES_BACKEND}' is only supported on Windows platforms.")
+	endif()
+endif()
 
 option(MATRIX_ROW_MAJOR "Use row-major matrices. Column-major matrices are used by default." OFF)
 
@@ -537,9 +558,9 @@ if(BUILD_LUA_BINDINGS)
 endif()
 
 if(DISABLE_RTTI_AND_EXCEPTIONS)
-    if( CMAKE_COMPILER_IS_GNUCXX )
+	if( CMAKE_COMPILER_IS_GNUCXX )
 		add_definitions( -fno-rtti -fno-exceptions )
-    elseif( MSVC )
+	elseif( MSVC )
 		add_definitions( -D_HAS_EXCEPTIONS=0 /GR- )
 		if(CMAKE_CXX_FLAGS MATCHES "/EHsc ")
 			string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -552,7 +573,7 @@ if(DISABLE_RTTI_AND_EXCEPTIONS)
 		endif()
 	else()
 		message(STATUS "Could not create build configuration without rtti and exceptions...")
-    endif()
+	endif()
 endif()
 
 
@@ -704,7 +725,7 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 		${PROJECT_SOURCE_DIR}/Samples/shell/RendererExtensions.h
 	)
 	
-	if(WIN32)
+	if(SAMPLES_BACKEND STREQUAL "Win32_GL2")
 		list(APPEND shell_SRC_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.cpp
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_Win32_GL2.cpp
@@ -713,7 +734,15 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Windows.h
 		)
-	else()
+	elseif(SAMPLES_BACKEND STREQUAL "SDL_GL2")
+		list(APPEND shell_SRC_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_SDL_GL2.cpp
+		)
+		list(APPEND shell_HDR_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.h
+		)
+	elseif(SAMPLES_BACKEND STREQUAL "X11_GL2")
 		list(APPEND shell_SRC_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.cpp
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_X11_GL2.cpp
@@ -722,9 +751,9 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.h
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Xlib.h
 		)
+	else()
+		message(FATAL_ERROR "Unknown samples backend '${SAMPLES_BACKEND}'.")
 	endif()
-		
-	
 	
 	include_directories(${PROJECT_SOURCE_DIR}/Samples/backends)
 	include_directories(${PROJECT_SOURCE_DIR}/Samples/shell)
@@ -758,10 +787,7 @@ if(BUILD_SAMPLES)
 			RUNTIME DESTINATION ${SAMPLES_DIR}/${sample}
 			BUNDLE DESTINATION ${SAMPLES_DIR})
 	endforeach()
-	
-	# TODO: Temporary test for shell_v2
-	target_link_libraries(loaddocument shell)
-	
+
 	message("-- Can SDL2 samples be built")
 	find_package(SDL2)
 	if(SDL2_FOUND)
@@ -771,16 +797,20 @@ if(BUILD_SAMPLES)
 			if(GLEW_FOUND)
 				message("-- Can SDL2 sample w/OpenGL renderer be built - yes")
 				include_directories(${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
+				
+				bl_sample(sdl2 ${sample_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${GLEW_LIBRARIES})
 
-				bl_sample(sdl2 ${sample_LIBRARIES}  ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${GLEW_LIBRARIES})
-			
 				# The samples always set this as their current working directory
 				install(DIRECTORY DESTINATION ${SAMPLES_DIR}/basic/sdl2)
 				install(TARGETS sdl2
 					RUNTIME DESTINATION ${SAMPLES_DIR}/sdl2
 					BUNDLE DESTINATION ${SAMPLES_DIR})
+				
+				if(SAMPLES_BACKEND STREQUAL "SDL_GL2")
+					target_link_libraries(shell PRIVATE ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${GLEW_LIBRARIES})
+				endif()
 			else()
-					message("-- Can SDL2 sample w/OpenGL renderer be built - no - GLEW not found")
+				message("-- Can SDL2 sample w/OpenGL renderer be built - no - GLEW not found")
 			endif()
 			
 			if("${SDL2_VERSION}" VERSION_GREATER_EQUAL "2.0.20")
@@ -797,7 +827,7 @@ if(BUILD_SAMPLES)
 				message("-- Can SDL2 sample w/SDL-renderer be built - no - requires SDL 2.0.20 (found ${SDL2_VERSION})")
 			endif()
 		else()
-				message("-- Can SDL2 samples be built - SDL2_image not found")
+			message("-- Can SDL2 samples be built - SDL2_image not found")
 		endif()
 	else()
 		message("-- Can SDL2 samples be built - SDL2 not found")
@@ -887,7 +917,7 @@ endif()
 #===================================
 
 if(RMLUI_TESTS_ENABLED)
-    add_subdirectory(Tests)
+	add_subdirectory(Tests)
 endif()
 
 #===================================

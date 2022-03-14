@@ -31,6 +31,7 @@
 #include <RmlUi/Debugger/Debugger.h>
 #include <Shell.h>
 #include <ShellFileInterface.h>
+#include <PlatformExtensions.h>
 #include <string.h>
 
 #include "SystemInterfaceSDL2.h"
@@ -55,6 +56,7 @@ int main(int /*argc*/, char** /*argv*/)
 
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* screen = SDL_CreateWindow("LibRmlUi SDL2 test", 20, 20, window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	
 	SDL_GLContext glcontext = SDL_GL_CreateContext(screen);
 	int oglIdx = -1;
 	int nRD = SDL_GetNumRenderDrivers();
@@ -84,7 +86,7 @@ int main(int /*argc*/, char** /*argv*/)
 	RmlUiSDL2Renderer Renderer(renderer, screen);
 	RmlUiSDL2SystemInterface SystemInterface;
 
-	Rml::String root = Shell::FindSamplesRoot();
+	Rml::String root = PlatformExtensions::FindSamplesRoot();
 	ShellFileInterface FileInterface(root);
 
 	Rml::SetFileInterface(&FileInterface);
