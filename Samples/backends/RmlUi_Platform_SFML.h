@@ -26,39 +26,40 @@
  *
  */
 
-#ifndef RMLUI_BACKENDS_PLATFORM_SDL_H
-#define RMLUI_BACKENDS_PLATFORM_SDL_H
+#ifndef RMLUI_BACKENDS_PLATFORM_SFML_H
+#define RMLUI_BACKENDS_PLATFORM_SFML_H
 
 #include <RmlUi/Core/Input.h>
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
-#include <SDL.h>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 
-class SystemInterface_SDL : public Rml::SystemInterface {
+class SystemInterface_SFML : public Rml::SystemInterface {
 public:
 	double GetElapsedTime() override;
 
-	void SetMouseCursor(const Rml::String& cursor_name);
+	void SetMouseCursor(const Rml::String& cursor_name) override;
 
 	void SetClipboardText(const Rml::String& text) override;
 	void GetClipboardText(Rml::String& text) override;
 };
 
-namespace RmlSDL {
+namespace RmlSFML {
 
 bool Initialize();
 void Shutdown();
 
-bool CreateWindow(const char* name, int width, int height, bool allow_resize, Uint32 flags, SDL_Window*& out_window);
+bool CreateWindow(const char* name, int width, int height, bool allow_resize, sf::RenderWindow*& out_window);
 void CloseWindow();
 
-bool EventHandler(SDL_Event& event);
+bool EventHandler(sf::Event& event);
 void SetContextForInput(Rml::Context* context);
 
-Rml::Input::KeyIdentifier ConvertKey(int sdl_key);
-int ConvertMouseButton(int sdl_mouse_button);
+Rml::Input::KeyIdentifier ConvertKey(sf::Keyboard::Key sfml_key);
 int GetKeyModifierState();
 
-} // namespace RmlSDL
+} // namespace RmlSFML
 
 #endif

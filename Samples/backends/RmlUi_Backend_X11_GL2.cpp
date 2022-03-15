@@ -260,6 +260,7 @@ void Backend::RequestExit()
 void Backend::BeginFrame()
 {
 	RmlGL2::BeginFrame();
+	RmlGL2::Clear();
 }
 
 void Backend::PresentFrame()

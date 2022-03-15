@@ -51,7 +51,6 @@
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
-static bool initialized = false;
 static int viewport_width = 0;
 static int viewport_height = 0;
 
@@ -67,7 +66,6 @@ void RenderInterface_GL2::RenderGeometry(Rml::Vertex* vertices, int RMLUI_UNUSED
 	glTranslatef(translation.x, translation.y, 0);
 
 	glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].position);
-	glEnableClientState(GL_COLOR_ARRAY);
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), &vertices[0].colour);
 
 	if (!texture)
@@ -78,7 +76,10 @@ void RenderInterface_GL2::RenderGeometry(Rml::Vertex* vertices, int RMLUI_UNUSED
 	else
 	{
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)texture);
+
+		if (texture != TextureIgnoreBinding)
+			glBindTexture(GL_TEXTURE_2D, (GLuint)texture);
+
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].tex_coord);
 	}
@@ -327,55 +328,46 @@ void RenderInterface_GL2::SetTransform(const Rml::Matrix4f* transform)
 		glLoadIdentity();
 }
 
-void RmlGL2::Initialize()
-{
-	// Set up the GL state
-	glClearColor(0, 0, 0, 1);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	initialized = true;
-}
+void RmlGL2::Initialize() {}
 
 void RmlGL2::Shutdown()
 {
-	initialized = false;
 	viewport_width = 0;
 	viewport_height = 0;
 }
 
 void RmlGL2::SetViewport(int width, int height)
 {
-	if (initialized && (viewport_width != width || viewport_height != height))
-	{
-		Rml::Matrix4f projection, view;
-
-		viewport_width = width;
-		viewport_height = height;
-
-		glViewport(0, 0, width, height);
-	}
+	viewport_width = width;
+	viewport_height = height;
 }
 
 void RmlGL2::BeginFrame()
 {
 	RMLUI_ASSERT(viewport_width > 0 && viewport_height > 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, viewport_width, viewport_height);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	Rml::Matrix4f projection = Rml::Matrix4f::ProjectOrtho(0, (float)viewport_width, (float)viewport_height, 0, -10000, 10000);
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(projection.data());
-	Rml::Matrix4f view = Rml::Matrix4f::Identity();
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(view.data());
+	glLoadIdentity();
 }
 
 void RmlGL2::EndFrame() {}
+
+void RmlGL2::Clear()
+{
+	glClearStencil(0);
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}

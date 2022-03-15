@@ -243,7 +243,6 @@ bool RmlX11::OpenWindow(const char* name, unsigned int width, unsigned int heigh
 	{
 		// Create cursors
 		cursor_default = XCreateFontCursor(display, XC_left_ptr);
-		;
 		cursor_move = XCreateFontCursor(display, XC_fleur);
 		cursor_pointer = XCreateFontCursor(display, XC_hand1);
 		cursor_resize = XCreateFontCursor(display, XC_sizing);

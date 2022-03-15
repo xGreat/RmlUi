@@ -35,9 +35,40 @@
 static Rml::Context* context = nullptr;
 static SDL_Window* window = nullptr;
 
+static SDL_Cursor* cursor_default = nullptr;
+static SDL_Cursor* cursor_move = nullptr;
+static SDL_Cursor* cursor_pointer = nullptr;
+static SDL_Cursor* cursor_resize = nullptr;
+static SDL_Cursor* cursor_cross = nullptr;
+static SDL_Cursor* cursor_text = nullptr;
+static SDL_Cursor* cursor_unavailable = nullptr;
+
 double SystemInterface_SDL::GetElapsedTime()
 {
 	return double(SDL_GetTicks()) / 1000.0;
+}
+
+void SystemInterface_SDL::SetMouseCursor(const Rml::String& cursor_name)
+{
+	SDL_Cursor* cursor = nullptr;
+
+	if (cursor_name.empty() || cursor_name == "arrow")
+		cursor = cursor_default;
+	else if (cursor_name == "move")
+		cursor = cursor_move;
+	else if (cursor_name == "pointer")
+		cursor = cursor_pointer;
+	else if (cursor_name == "resize")
+		cursor = cursor_resize;
+	else if (cursor_name == "cross")
+		cursor = cursor_cross;
+	else if (cursor_name == "text")
+		cursor = cursor_text;
+	else if (cursor_name == "unavailable")
+		cursor = cursor_unavailable;
+
+	if (cursor)
+		SDL_SetCursor(cursor);
 }
 
 void SystemInterface_SDL::SetClipboardText(const Rml::String& text_utf8)
@@ -114,13 +145,38 @@ bool RmlSDL::CreateWindow(const char* name, int width, int height, bool allow_re
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 	out_window = window;
 
+	cursor_default = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+	cursor_move = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+	cursor_pointer = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+	cursor_resize = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+	cursor_cross = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+	cursor_text = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	cursor_unavailable = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+
 	return window != nullptr;
 }
 
 void RmlSDL::CloseWindow()
 {
 	SDL_DestroyWindow(window);
+
+	SDL_FreeCursor(cursor_default);
+	SDL_FreeCursor(cursor_move);
+	SDL_FreeCursor(cursor_pointer);
+	SDL_FreeCursor(cursor_resize);
+	SDL_FreeCursor(cursor_cross);
+	SDL_FreeCursor(cursor_text);
+	SDL_FreeCursor(cursor_unavailable);
+
 	window = nullptr;
+
+	cursor_default = nullptr;
+	cursor_move = nullptr;
+	cursor_pointer = nullptr;
+	cursor_resize = nullptr;
+	cursor_cross = nullptr;
+	cursor_text = nullptr;
+	cursor_unavailable = nullptr;
 }
 
 Rml::Input::KeyIdentifier RmlSDL::ConvertKey(int sdlkey)

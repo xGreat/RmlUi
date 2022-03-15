@@ -64,6 +64,9 @@ public:
 
 	/// Called by RmlUi when it wants to set the current transform matrix to a new matrix.
 	void SetTransform(const Rml::Matrix4f* transform) override;
+
+	// Special texture handle value to disable binding but still enable texturing. Used by backends when they bind the texture themselves.
+	static const Rml::TextureHandle TextureIgnoreBinding = Rml::TextureHandle(-1);
 };
 
 namespace RmlGL2 {
@@ -75,6 +78,8 @@ void SetViewport(int width, int height);
 
 void BeginFrame();
 void EndFrame();
+
+void Clear();
 
 } // namespace RmlGL2
 

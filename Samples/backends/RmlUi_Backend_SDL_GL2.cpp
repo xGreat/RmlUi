@@ -70,49 +70,22 @@ public:
 	void ReleaseTexture(Rml::TextureHandle texture_handle) override;
 };
 
-void RenderInterface_GL2_SDL::RenderGeometry(Rml::Vertex* vertices, int /*num_vertices*/, int* indices, int num_indices, Rml::TextureHandle texture,
+void RenderInterface_GL2_SDL::RenderGeometry(Rml::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rml::TextureHandle texture,
 	const Rml::Vector2f& translation)
 {
-	// SDL uses shaders that we need to disable here
-	glUseProgramObjectARB(0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPushMatrix();
-	glTranslatef(translation.x, translation.y, 0);
-
 	SDL_Texture* sdl_texture = (SDL_Texture*)texture;
 	if (sdl_texture)
 	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		SDL_GL_BindTexture(sdl_texture, nullptr, nullptr);
+		texture = RenderInterface_GL2::TextureIgnoreBinding;
 	}
 
-	glVertexPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].position);
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Rml::Vertex), &vertices[0].colour);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(Rml::Vertex), &vertices[0].tex_coord);
-
-	glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices);
+	RenderInterface_GL2::RenderGeometry(vertices, num_vertices, indices, num_indices, texture, translation);
 
 	if (sdl_texture)
 	{
 		SDL_GL_UnbindTexture(sdl_texture);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
-
-	glPopMatrix();
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisable(GL_BLEND);
-
-	// Draw a fake point just outside the screen to let SDL know that it needs to reset its state in case it wants to render a texture.
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-	SDL_RenderDrawPoint(renderer, -1, -1);
 }
 
 bool RenderInterface_GL2_SDL::LoadTexture(Rml::TextureHandle& texture_handle, Rml::Vector2i& texture_dimensions, const Rml::String& source)
@@ -132,9 +105,9 @@ bool RenderInterface_GL2_SDL::LoadTexture(Rml::TextureHandle& texture_handle, Rm
 
 	const size_t i = source.rfind('.');
 	Rml::String extension = (i == Rml::String::npos ? Rml::String() : source.substr(i + 1));
-	
+
 	SDL_Surface* surface = IMG_LoadTyped_RW(SDL_RWFromMem(buffer, int(buffer_size)), 1, extension.c_str());
-	
+
 	bool success = false;
 
 	if (surface)
@@ -339,12 +312,20 @@ void Backend::BeginFrame()
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
 
+	// SDL uses shaders that we need to disable here.
+	glUseProgramObjectARB(0);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
 	RmlGL2::BeginFrame();
 }
 
 void Backend::PresentFrame()
 {
 	RmlGL2::EndFrame();
+
+	// Draw a fake point just outside the screen to let SDL know that it needs to reset its state in case it wants to render a texture next frame.
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+	SDL_RenderDrawPoint(renderer, -1, -1);
 
 	SDL_RenderPresent(renderer);
 }
