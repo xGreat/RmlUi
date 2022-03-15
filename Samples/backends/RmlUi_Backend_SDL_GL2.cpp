@@ -56,7 +56,7 @@ static bool running = false;
 static Rml::UniquePtr<RenderInterface_GL2_SDL> render_interface;
 static Rml::UniquePtr<SystemInterface_SDL> system_interface;
 
-static void ProcessKeyDown(Rml::Input::KeyIdentifier key_identifier, const int key_modifier_state);
+static void ProcessKeyDown(SDL_Event& event, Rml::Input::KeyIdentifier key_identifier, const int key_modifier_state);
 
 class RenderInterface_GL2_SDL : public RenderInterface_GL2 {
 public:
@@ -132,8 +132,10 @@ bool RenderInterface_GL2_SDL::LoadTexture(Rml::TextureHandle& texture_handle, Rm
 
 	const size_t i = source.rfind('.');
 	Rml::String extension = (i == Rml::String::npos ? Rml::String() : source.substr(i + 1));
-
+	
 	SDL_Surface* surface = IMG_LoadTyped_RW(SDL_RWFromMem(buffer, int(buffer_size)), 1, extension.c_str());
+	
+	bool success = false;
 
 	if (surface)
 	{
@@ -143,17 +145,15 @@ bool RenderInterface_GL2_SDL::LoadTexture(Rml::TextureHandle& texture_handle, Rm
 		{
 			texture_handle = (Rml::TextureHandle)texture;
 			texture_dimensions = Rml::Vector2i(surface->w, surface->h);
-			SDL_FreeSurface(surface);
-		}
-		else
-		{
-			return false;
+			success = true;
 		}
 
-		return true;
+		SDL_FreeSurface(surface);
 	}
 
-	return false;
+	delete[] buffer;
+
+	return success;
 }
 
 bool RenderInterface_GL2_SDL::GenerateTexture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions)
@@ -228,7 +228,7 @@ bool Backend::OpenWindow(const char* in_name, unsigned int width, unsigned int h
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
 
-	Uint32 window_flags = SDL_WINDOW_OPENGL;
+	const Uint32 window_flags = SDL_WINDOW_OPENGL;
 	SDL_Window* window = nullptr;
 	if (!RmlSDL::CreateWindow(in_name, width, height, allow_resize, window_flags, window))
 	{
@@ -289,7 +289,6 @@ void Backend::CloseWindow()
 	glcontext = nullptr;
 
 	RmlSDL::CloseWindow();
-	IMG_Quit();
 	RmlSDL::Shutdown();
 }
 
@@ -310,7 +309,7 @@ void Backend::EventLoop(ShellIdleFunction idle_function)
 				break;
 			case SDL_KEYDOWN:
 				// Intercept keydown events to handle global sample shortcuts.
-				ProcessKeyDown(RmlSDL::ConvertKey(event.key.keysym.sym), RmlSDL::GetKeyModifierState());
+				ProcessKeyDown(event, RmlSDL::ConvertKey(event.key.keysym.sym), RmlSDL::GetKeyModifierState());
 				break;
 			case SDL_WINDOWEVENT:
 				switch (event.window.event)
@@ -357,7 +356,7 @@ void Backend::SetContext(Rml::Context* new_context)
 	UpdateWindowDimensions();
 }
 
-static void ProcessKeyDown(Rml::Input::KeyIdentifier key_identifier, const int key_modifier_state)
+static void ProcessKeyDown(SDL_Event& event, Rml::Input::KeyIdentifier key_identifier, const int key_modifier_state)
 {
 	if (!context)
 		return;
@@ -387,8 +386,8 @@ static void ProcessKeyDown(Rml::Input::KeyIdentifier key_identifier, const int k
 	}
 	else
 	{
-		// No global shortcuts detected, submit the key to the context.
-		if (context->ProcessKeyDown(key_identifier, key_modifier_state))
+		// No global shortcuts detected, submit the key to platform handler.
+		if (RmlSDL::EventHandler(event))
 		{
 			// The key was not consumed, check for shortcuts that are of lower priority.
 			if (key_identifier == Rml::Input::KI_R && key_modifier_state & Rml::Input::KM_CTRL)

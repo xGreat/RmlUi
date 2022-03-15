@@ -90,6 +90,8 @@ bool RmlSDL::EventHandler(SDL_Event& event)
 		break;
 	case SDL_KEYDOWN:
 		result = context->ProcessKeyDown(ConvertKey(event.key.keysym.sym), GetKeyModifierState());
+		if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER)
+			result &= context->ProcessTextInput('\n');
 		break;
 	case SDL_KEYUP:
 		result = context->ProcessKeyUp(ConvertKey(event.key.keysym.sym), GetKeyModifierState());

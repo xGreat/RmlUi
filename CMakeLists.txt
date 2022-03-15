@@ -164,7 +164,7 @@ endif()
 option(BUILD_SAMPLES "Build samples" OFF)
 
 set(SAMPLES_BACKEND "Auto" CACHE STRING "Backend platform and renderer used for the samples.")
-set_property(CACHE SAMPLES_BACKEND PROPERTY STRINGS Auto Win32_GL2 SDL_GL2 X11_GL2)
+set_property(CACHE SAMPLES_BACKEND PROPERTY STRINGS Auto Win32_GL2 SDL_GL2 X11_GL2 SDL_SDLrenderer)
 
 if(SAMPLES_BACKEND STREQUAL "Auto")
   if(WIN32)
@@ -710,14 +710,12 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	
 	# Add the new shell
 	list(APPEND shell_SRC_FILES
-		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/Shell.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/ShellFileInterface.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/PlatformExtensions.cpp
 		${PROJECT_SOURCE_DIR}/Samples/shell/RendererExtensions.cpp
 	)
 	list(APPEND shell_HDR_FILES
-		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
 		${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend.h
 		${PROJECT_SOURCE_DIR}/Samples/shell/Shell.h
 		${PROJECT_SOURCE_DIR}/Samples/shell/ShellFileInterface.h
@@ -728,28 +726,44 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	if(SAMPLES_BACKEND STREQUAL "Win32_GL2")
 		list(APPEND shell_SRC_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_Win32_GL2.cpp
 		)
 		list(APPEND shell_HDR_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_Win32.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Windows.h
 		)
 	elseif(SAMPLES_BACKEND STREQUAL "SDL_GL2")
 		list(APPEND shell_SRC_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_SDL_GL2.cpp
 		)
 		list(APPEND shell_HDR_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
 		)
 	elseif(SAMPLES_BACKEND STREQUAL "X11_GL2")
 		list(APPEND shell_SRC_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.cpp	
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_X11_GL2.cpp
 		)
 		list(APPEND shell_HDR_FILES
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_X11.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_GL2.h
 			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Include_Xlib.h
+		)
+	elseif(SAMPLES_BACKEND STREQUAL "SDL_SDLrenderer")
+		list(APPEND shell_SRC_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_SDL.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.cpp
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Backend_SDL_SDLrenderer.cpp
+		)
+		list(APPEND shell_HDR_FILES
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Platform_SDL.h
+			${PROJECT_SOURCE_DIR}/Samples/backends/RmlUi_Renderer_SDL.h
 		)
 	else()
 		message(FATAL_ERROR "Unknown samples backend '${SAMPLES_BACKEND}'.")
@@ -768,8 +782,9 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	
 	add_common_target_options(shell)
 	
-	target_compile_definitions(shell PRIVATE RMLUI_RENDERER_GL2)
-	
+	if(SAMPLES_BACKEND MATCHES "GL2$")
+		target_compile_definitions(shell PRIVATE RMLUI_RENDERER_GL2)
+	endif()
 endif()
 
 
@@ -806,7 +821,7 @@ if(BUILD_SAMPLES)
 					RUNTIME DESTINATION ${SAMPLES_DIR}/sdl2
 					BUNDLE DESTINATION ${SAMPLES_DIR})
 				
-				if(SAMPLES_BACKEND STREQUAL "SDL_GL2")
+				if(SAMPLES_BACKEND MATCHES "^SDL")
 					target_link_libraries(shell PRIVATE ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${GLEW_LIBRARIES})
 				endif()
 			else()
