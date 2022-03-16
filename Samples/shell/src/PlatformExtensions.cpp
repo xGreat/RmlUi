@@ -26,7 +26,7 @@
  *
  */
 
-#include "PlatformExtensions.h"
+#include "../include/PlatformExtensions.h"
 #include <RmlUi/Core/Platform.h>
 
 #if defined RMLUI_PLATFORM_WIN32

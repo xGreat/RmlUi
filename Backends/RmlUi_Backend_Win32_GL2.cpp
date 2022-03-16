@@ -46,13 +46,10 @@ static HGLRC render_context = nullptr;
 
 static Rml::Context* context = nullptr;
 
-static bool activated = true;
-static bool running = false;
-static std::wstring instance_name;
-
 static Rml::UniquePtr<RenderInterface_GL2> render_interface;
 static Rml::UniquePtr<SystemInterface_Win32> system_interface;
 
+static bool running = false;
 static int window_width = 0;
 static int window_height = 0;
 
@@ -151,7 +148,7 @@ bool Backend::OpenWindow(const char* in_name, unsigned int width, unsigned int h
 	// Initialize the window but don't show it yet.
 	if (!RmlWin32::InitializeWindow(in_name, width, height, allow_resize, window_handle, WindowProcedureHandler))
 		return false;
-	
+
 	// Attach the OpenGL context.
 	if (!AttachToNative())
 	{
