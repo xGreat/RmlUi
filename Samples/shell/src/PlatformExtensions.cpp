@@ -39,6 +39,7 @@
 
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <dirent.h>
+	#include <string.h>
 
 #elif defined RMLUI_PLATFORM_UNIX
 
@@ -46,6 +47,7 @@
 	#include <unistd.h>
 	#include <sys/stat.h>
 	#include <dirent.h>
+	#include <string.h>
 
 #endif
 
