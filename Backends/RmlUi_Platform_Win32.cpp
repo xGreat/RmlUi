@@ -33,6 +33,7 @@
 #include <RmlUi/Core/Input.h>
 #include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Core/SystemInterface.h>
+#include <string.h>
 
 static bool ProcessInputEvent(HWND window, UINT message, WPARAM w_param, LPARAM l_param);
 static void InitialiseKeymap();

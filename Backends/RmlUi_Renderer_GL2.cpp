@@ -31,6 +31,7 @@
 #include <RmlUi/Core/FileInterface.h>
 #include <RmlUi/Core/Log.h>
 #include <RmlUi/Core/Platform.h>
+#include <string.h>
 
 #if defined RMLUI_PLATFORM_WIN32
 	#include "RmlUi_Include_Windows.h"
