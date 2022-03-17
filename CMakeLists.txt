@@ -674,9 +674,9 @@ if(BUILD_SAMPLES OR BUILD_TESTING)
 	# Add OS dependencies.
 	if (WIN32)
 		target_link_libraries(shell PRIVATE shlwapi)
-	endif()
-	
-	if(UNIX AND NOT APPLE)
+	elseif(APPLE)
+		target_link_libraries(shell PRIVATE "-framework Cocoa")
+	elseif(UNIX AND NOT APPLE)
 		find_package(X11)
 		if (X11_FOUND)
 			message("-- Found X11 library.")
